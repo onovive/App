@@ -108,7 +108,7 @@
 
       #passcodeSection {
         text-align: center;
-        margin-top: 20px;
+        /* margin-top: 20px; */
       }
 
       #errorMessage {
@@ -245,15 +245,15 @@
         box-sizing: border-box;
       }
 
-      .periodiq-login .logo {
+   .logo {
         text-align: center;
         margin: auto !important;
         font-size: 24px;
         color: #333;
-        margin-bottom: 20px;
+        margin-bottom: -20px;
         font-weight: 700;
         height: 100px;
-        width: 200px;
+        width: 300px;
       }
 
       .periodiq-login .heading {
@@ -335,6 +335,17 @@
         .periodiq-login .heading {
           font-size: 28px;
         }
+        .logo {
+        text-align: center;
+        margin: auto !important;
+        font-size: 24px;
+        color: #333;
+        margin-bottom: -20px;
+        font-weight: 700;
+        height: 100px;
+        width: 200px;
+      }
+
       }
     </style>
   </head>
@@ -353,9 +364,10 @@
 
       <div id="errorMessage"></div>
     </div> -->
+    <img class="logo" src="./Image.svg" alt="" />
+
     <div class="periodiq-login">
       <div class="container" id="passcodeSection">
-        <img class="logo" src="./Image.svg" alt="" />
         <h1 class="heading">Caccia al Tesoro</h1>
 
         <input type="text" id="passcodeInput" placeholder="Inserisci il tuo codice" class="input" />
@@ -365,7 +377,7 @@
         </div>
         
         <div id="errorMessage"></div>
-        <p class="terms">By continuing, you agree to Periodiq's <a href="#">Consumer Terms</a> and <a href="#">Usage Policy</a>, and acknowledge their <a href="#">Privacy Policy</a>.</p>
+        <!-- <p class="terms">By continuing, you agree to Periodiq's <a href="#">Consumer Terms</a> and <a href="#">Usage Policy</a>, and acknowledge their <a href="#">Privacy Policy</a>.</p> -->
       </div>
     </div>
     <div id="mainContent">
