@@ -80,18 +80,30 @@ function showAllImagesPreview() {
     submitButton.className = "loading-button px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500";
 
     submitButton.addEventListener("click", async function () {
-        // Show the spinner
+        // Disable the button and show a loading message
         submitButton.classList.add("loading");
         submitButton.disabled = true;
         submitButton.textContent = "Attendi";
-        const buttonText = submitButton.querySelector(".button-text");
 
-        // Call completion function or handle submission
-        addStatus(currentPasscode)
-        setTimeout(showSuccessMessage, 5000); // Waits for 5000 milliseconds (5 seconds) before calling showSuccessMessage
+        // Show animated status messages
+        const statusMessage = document.createElement("p");
+        statusMessage.className = "mt-4 text-center text-gray-700 text-base animate-pulse";
+        statusMessage.textContent = "Attendere, le immagini sono in fase di caricamento...";
+        clueContainer.appendChild(statusMessage);
 
+        // Update status after 10 seconds
+        setTimeout(() => {
+            statusMessage.className = "mt-4 text-center text-gray-700 text-base animate-bounce";
+            statusMessage.textContent = "Calcolo del punteggio in corso, per favore attendi...";
+        }, 10000);
 
+        // Simulate the async operation
+        const { validCount, clueCount } = await addStatus(currentPasscode);
+
+        // Final message after operation completes
+        setTimeout(() => showSuccessMessage(validCount, clueCount), 1000);
     });
+
 
 
 
@@ -109,32 +121,44 @@ function showAllImagesPreview() {
 
 
 function showCompletionMessage() {
-    // Call your existing completion message logic here
 
-    // Show all images preview
     showAllImagesPreview();
-
-
 }
 
-function showSuccessMessage() {
+function showSuccessMessage(validCount, clueCount) {
     const clueContainer = document.getElementById("clueContainer");
     clueContainer.innerHTML = ""; // Clear the container    
+
+    // Create a container div for the text content
+    const textContainer = document.createElement("div");
+    textContainer.className = "flex flex-col items-center justify-center h-screen bg-white p-6 rounded-lg shadow-lg";
+
     // Create a completion message
-    const messageDiv = document.createElement("div");
-    messageDiv.className =
-        "flex justify-center items-center h-screen bg-white p-4";
-
     const message = document.createElement("h1");
-    message.className = "text-2xl font-bold text-green-600";
-    message.textContent = "Congratulazioni! Hai completato tutti gli indizi!";
+    message.className = "text-3xl sm:text-4xl font-bold text-green-600 mb-4";
+    message.textContent = "Congratulazioni! hai completato la caccia al tesoro!";
 
-    messageDiv.appendChild(message);
-    clueContainer.appendChild(messageDiv);
+    // Add smaller follow-up message
+    const followUp = document.createElement("p");
+    followUp.className = "text-sm sm:text-base text-gray-600 mb-4 text-center";
+    followUp.textContent = "Non appena tutti i giocatori avranno completato la sfida, riceverai una email con la classifica finale!";
 
+    // Subtext showing score with enhanced styling
+    const score = document.createElement("p");
+    score.className =
+        "text-lg sm:text-xl text-gray-700 font-semibold bg-green-100 px-4 py-2 rounded-md shadow-sm animate-fade-in delay-100";
+    score.textContent = `Hai indovinato ${validCount} su ${clueCount} indizi correttamente.`;
 
-    // Reload the page after 5 seconds
-    setTimeout(() => {
-        location.reload();
-    }, 6000);
+    // Append to text container
+    textContainer.appendChild(message);
+    textContainer.appendChild(followUp);
+    textContainer.appendChild(score);
+
+    // Append text container to clue container
+    clueContainer.appendChild(textContainer);
+
+    // // Reload after 15 seconds if no interaction
+    // setTimeout(() => {
+    //     location.reload();
+    // }, 15000);
 }
