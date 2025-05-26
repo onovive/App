@@ -636,7 +636,7 @@
                   alpha: false,
                 });
 
-                const compressedBlob = await picaInstance.toBlob(resizedCanvas, "image/jpeg", 0.5);
+                const compressedBlob = await picaInstance.toBlob(resizedCanvas, "image/jpeg", 0.3);
 
                 const bufferReader = new FileReader();
                 bufferReader.onload = function (event) {
