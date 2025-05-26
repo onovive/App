@@ -4,4 +4,4 @@ let currentPasscode = "";
 let uploadedImages = []; // This will store all images for preview
 globalData = {}
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPXFq8wNNo7fl50bZ5EyQeaQ17cg7WQEKN06enMf5S20roY02eLSeno3pIX3qwNayBhw/exec"
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwFT10uvY2HPhBxsvSZEI3hVY_fIjtrV_bpyjUg0jvD2xjVWeyWqaVXPGPHZCqltwKfdQ/exec"
