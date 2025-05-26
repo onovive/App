@@ -1,12 +1,14 @@
 async function addImageToDrive(currentPasscode) {
-    console.log("uploading image..")
-    
+    // console.log("uploading image..")
+    const nextButton = document.getElementById("nextButton");
+
+
     // Get the filenames from the globalData object
     const fileNames = Object.keys(globalData);
 
     // Array to hold all the upload promises
-    const uploadPromises = []; 
-    
+    const uploadPromises = [];
+
     // Loop through each filename to process the image upload
     for (const fileName of fileNames) {
 
@@ -36,14 +38,15 @@ async function addImageToDrive(currentPasscode) {
                 if (!response.ok) {
                     throw new Error(`An error has occurred: ${response.status}`);
                 }
-                
+
                 // Parse the response as JSON
                 const fileUploadResponse = await response.json();
-                
+                // console.log("fileUploadResponse", fileUploadResponse)
+
                 // Check if the upload was successful
                 if (fileUploadResponse.status === 'success') {
                     const fileResponse = JSON.parse(fileUploadResponse.response);
-                    console.log(`Successfully uploaded ${fileName}`);
+                    // console.log(`Successfully uploaded ${fileName}`);
                     // Remove the file data from globalData after successful upload
                     delete globalData[fileName];
                     return true; // Return true to indicate success
@@ -59,7 +62,7 @@ async function addImageToDrive(currentPasscode) {
             });
 
         // Add each upload promise to the array
-        uploadPromises.push(uploadPromise); 
+        uploadPromises.push(uploadPromise);
     }
 
     // Wait for all the image upload promises to complete
@@ -72,30 +75,37 @@ async function addImageToDrive(currentPasscode) {
 }
 
 async function addStatus(currentPasscode) {
-    // Prepare the payload object with the passcode
     const payload = {
         passcode: currentPasscode,
     };
 
-    // Send a request to update the status
-    fetch(`${SCRIPT_URL}?action=addStatus`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: JSON.stringify(payload), // Send the payload as a JSON string
-        mode: 'cors',
-        cache: 'no-cache',
-    })
-        .then(async response => {
-            // Check if the response is not successful
-            if (!response.ok) {
-                throw new Error(`An error has occurred: ${response.status}`);
-            }
-            // Handle any other logic if needed after status update
-        })
-        .catch(error => {
-            // Log any errors that occur during the status update
-            console.error(`Error updating status:`, error);
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=addStatus`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: JSON.stringify(payload),
+            mode: 'cors',
+            cache: 'no-cache',
         });
+
+        // console.log(response);
+
+        if (!response.ok) {
+            throw new Error(`An error has occurred: ${response.status}`);
+        }
+
+        const data = await response.json();
+        // console.log('validCount:', data.validCount);
+        // console.log('clueCount:', data.clueCount);
+
+        return {
+            validCount: data.validCount,
+            clueCount: data.clueCount,
+        };
+    } catch (error) {
+        console.error(`Error updating status:`, error);
+        return null; // So caller knows it failed
+    }
 }
