@@ -99,10 +99,14 @@ async function addStatus(currentPasscode) {
         const data = await response.json();
         // console.log('validCount:', data.validCount);
         // console.log('clueCount:', data.clueCount);
+        console.log('dataIndex:', data.resultIndex);
+
 
         return {
             validCount: data.validCount,
             clueCount: data.clueCount,
+            dataIndex: data.resultIndex,
+            timeTaken: data.timeTaken
         };
     } catch (error) {
         console.error(`Error updating status:`, error);
