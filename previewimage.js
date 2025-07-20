@@ -1,140 +1,139 @@
 function showAllImagesPreview() {
 
-    // Clear the existing content
-    const clueContainer = document.getElementById("clueContainer");
-    clueContainer.innerHTML = "";
+  // Clear the existing content
+  const clueContainer = document.getElementById("clueContainer");
+  clueContainer.innerHTML = "";
 
-    // Create a new container for the images
-    const previewContainer = document.createElement("div");
-    previewContainer.id = "imagesPreviewContainer";
-    previewContainer.className = "images-preview-container p-4 bg-gray-100 rounded-lg shadow-lg";
+  // Create a new container for the images
+  const previewContainer = document.createElement("div");
+  previewContainer.id = "imagesPreviewContainer";
+  previewContainer.className = "images-preview-container p-4 bg-gray-100 rounded-lg shadow-lg";
 
-    const title = document.createElement("h2");
-    title.textContent = "Preview delle Immagini";
-    title.className = "text-xl font-semibold mb-4 text-gray-800";
-    previewContainer.appendChild(title);
+  const title = document.createElement("h2");
+  title.textContent = "Preview delle Immagini";
+  title.className = "text-xl font-semibold mb-4 text-gray-800";
+  previewContainer.appendChild(title);
 
-    // Collect all image previews from uploadedImages array
-    const uploadedImagesUrls = Object.entries(uploadedImages).filter(([key, url]) => url);
-    // console.log('Uploaded Images URLs:', uploadedImagesUrls);
+  // Collect all image previews from uploadedImages array
+  const uploadedImagesUrls = Object.entries(uploadedImages).filter(([key, url]) => url);
+  // console.log('Uploaded Images URLs:', uploadedImagesUrls);
 
-    if (uploadedImagesUrls.length === 0) {
-        const noImagesMessage = document.createElement("p");
-        noImagesMessage.textContent = "Nessuna immagine caricata.";
-        noImagesMessage.className = "text-gray-600";
-        previewContainer.appendChild(noImagesMessage);
-    } else {
-        uploadedImagesUrls.forEach(([clueNumber, dataUrl]) => {
-            // Ensure clueNumber is an integer and adjust for display
-            clueNumber = parseInt(clueNumber, 10) + 1; // Add 1 to clueNumber for display
+  if (uploadedImagesUrls.length === 0) {
+    const noImagesMessage = document.createElement("p");
+    noImagesMessage.textContent = "Nessuna immagine caricata.";
+    noImagesMessage.className = "text-gray-600";
+    previewContainer.appendChild(noImagesMessage);
+  } else {
+    uploadedImagesUrls.forEach(([clueNumber, dataUrl]) => {
+      // Ensure clueNumber is an integer and adjust for display
+      clueNumber = parseInt(clueNumber, 10) + 1; // Add 1 to clueNumber for display
 
-            // Ensure that the clueNumber is within bounds
-            if (clueNumber - 1 < clues.length) {
-                const imgContainer = document.createElement("div");
-                imgContainer.className = "image-preview";
+      // Ensure that the clueNumber is within bounds
+      if (clueNumber - 1 < clues.length) {
+        const imgContainer = document.createElement("div");
+        imgContainer.className = "image-preview";
 
-                // Create a container for clue number and text
-                const clueInfo = document.createElement("div");
-                clueInfo.className = "clue-info mb-2 text-center";
+        // Create a container for clue number and text
+        const clueInfo = document.createElement("div");
+        clueInfo.className = "clue-info mb-2 text-center";
 
-                // Add clue number
-                const clueNumberText = document.createElement("p");
-                clueNumberText.className = "clue-number text-lg font-semibold text-blue-600";
-                clueNumberText.textContent = `Indizio n° ${clueNumber}`;
-                clueInfo.appendChild(clueNumberText);
+        // Add clue number
+        const clueNumberText = document.createElement("p");
+        clueNumberText.className = "clue-number text-lg font-semibold text-blue-600";
+        clueNumberText.textContent = `Indizio n° ${clueNumber}`;
+        clueInfo.appendChild(clueNumberText);
 
-                // Add clue text
-                const clueQuestionText = document.createElement("p");
-                clueQuestionText.className = "clue-question text-gray-800";
-                clueQuestionText.textContent = clues[clueNumber - 1] ? clues[clueNumber - 1].question : "Testo mancante"; // Adjust index for clues array
-                clueInfo.appendChild(clueQuestionText);
+        // Add clue text
+        const clueQuestionText = document.createElement("p");
+        clueQuestionText.className = "clue-question text-gray-800";
+        clueQuestionText.textContent = clues[clueNumber - 1] ? clues[clueNumber - 1].question : "Testo mancante"; // Adjust index for clues array
+        clueInfo.appendChild(clueQuestionText);
 
-                imgContainer.appendChild(clueInfo);
-                // console.log(dataUrl)
-                // Create and add image
-                const img = document.createElement("img");
-                img.src = dataUrl.url;
-                img.className = "block w-full h-auto object-cover rounded-lg shadow-sm"; // Tailwind classes for image styling
-                imgContainer.appendChild(img);
+        imgContainer.appendChild(clueInfo);
+        // console.log(dataUrl)
+        // Create and add image
+        const img = document.createElement("img");
+        img.src = dataUrl.url;
+        img.className = "block w-full h-auto object-cover rounded-lg shadow-sm"; // Tailwind classes for image styling
+        imgContainer.appendChild(img);
 
-                previewContainer.appendChild(imgContainer);
-            }
-        });
-    }
-
-    // Add Back and Submit buttons
-
-    const backButton = document.createElement("button");
-    backButton.className = "navigation-button mr-2 py-2 px-4 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 focus:outline-none transition duration-300";
-    backButton.innerHTML = `<i class="fas fa-chevron-left"></i>`;
-    backButton.addEventListener("click", function () {
-        currentClueIndex = clues.length - 1
-        displayAllClues();
+        previewContainer.appendChild(imgContainer);
+      }
     });
+  }
 
-    const submitButton = document.createElement("button");
-    submitButton.innerHTML = `
+  // Add Back and Submit buttons
+
+  const backButton = document.createElement("button");
+  backButton.className = "navigation-button mr-2 py-2 px-4 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 focus:outline-none transition duration-300";
+  backButton.innerHTML = `<i class="fas fa-chevron-left"></i>`;
+  backButton.addEventListener("click", function () {
+    currentClueIndex = clues.length - 1
+    displayAllClues();
+  });
+
+  const submitButton = document.createElement("button");
+  submitButton.innerHTML = `
       <span class="spinner hidden mr-2 border-t-2 border-white border-solid rounded-full w-4 h-4 animate-spin"></span>
       <span class="button-text">Invio</span>
     `;
-    submitButton.className = "loading-button px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  submitButton.className = "loading-button px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500";
 
-    submitButton.addEventListener("click", async function () {
-        // Disable the button and show a loading message
-        submitButton.classList.add("loading");
-        submitButton.disabled = true;
-        submitButton.textContent = "Attendi";
+  submitButton.addEventListener("click", async function () {
+    // Disable the button and show a loading message
+    submitButton.classList.add("loading");
+    submitButton.disabled = true;
+    submitButton.textContent = "Attendi";
 
-        // Show animated status messages
-        const statusMessage = document.createElement("p");
-        statusMessage.className = "mt-4 text-center text-gray-700 text-base animate-pulse";
-        statusMessage.textContent = "Attendere, le immagini sono in fase di caricamento...";
-        clueContainer.appendChild(statusMessage);
+    // Show animated status messages
+    const statusMessage = document.createElement("p");
+    statusMessage.className = "mt-4 text-center text-gray-700 text-base animate-pulse";
+    statusMessage.textContent = "Attendere, le immagini sono in fase di caricamento...";
+    clueContainer.appendChild(statusMessage);
 
-        // Update status after 10 seconds
-        setTimeout(() => {
-            statusMessage.className = "mt-4 text-center text-gray-700 text-base animate-bounce";
-            statusMessage.textContent = "Calcolo del punteggio in corso, per favore attendi...";
-        }, 10000);
+    // Update status after 10 seconds
+    setTimeout(() => {
+      statusMessage.className = "mt-4 text-center text-gray-700 text-base animate-bounce";
+      statusMessage.textContent = "Calcolo del punteggio in corso, per favore attendi...";
+    }, 10000);
 
-        // Simulate the async operation
-        const { validCount, clueCount, dataIndex, timeTaken } = await addStatus(currentPasscode);
-        console.log("s", timeTaken)
+    // Simulate the async operation
+    const { validCount, clueCount, dataIndex, timeTaken } = await addStatus(currentPasscode);
 
-        // Final message after operation completes
-        setTimeout(() => showSuccessMessage(validCount, clueCount, dataIndex, timeTaken), 1000);
-    });
-
+    // Final message after operation completes
+    setTimeout(() => showSuccessMessage(validCount, clueCount, dataIndex, timeTaken), 1000);
+  });
 
 
 
-    // Append the preview container to the body or any other desired location
-    clueContainer.appendChild(previewContainer);
-    clueContainer.appendChild(backButton);
 
-    clueContainer.appendChild(submitButton);
+  // Append the preview container to the body or any other desired location
+  clueContainer.appendChild(previewContainer);
+  clueContainer.appendChild(backButton);
+
+  clueContainer.appendChild(submitButton);
 
 
-    // Scroll to the new preview section
-    window.scrollTo(0, 0);
+  // Scroll to the new preview section
+  window.scrollTo(0, 0);
 }
 
 
 
 function showCompletionMessage() {
 
-    showAllImagesPreview();
+  showAllImagesPreview();
 }
 
 
 function showSuccessMessage(validCount, clueCount, dataIndex, timeTaken) {
-    const clueContainer = document.getElementById("clueContainer");
-    clueContainer.innerHTML = "";
+  const clueContainer = document.getElementById("clueContainer");
+  clueContainer.innerHTML = "";
 
-    const successRate = Math.round((validCount / clueCount) * 100);
+  const successRate = Math.round((validCount / clueCount) * 100);
 
-    const container = document.createElement("div");
-    container.setAttribute("style", `
+  const container = document.createElement("div");
+  container.setAttribute("style", `
     background: white;
     border-radius: 20px;
     padding: 40px;
@@ -145,7 +144,7 @@ function showSuccessMessage(validCount, clueCount, dataIndex, timeTaken) {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   `);
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div style="text-align: center; margin-bottom: 30px;">
       <div style="font-size: 4rem; margin-bottom: 10px; animation: bounce 2s infinite;">🏆</div>
       <h1 style="font-size: 2.5rem; color: #333; margin-bottom: 10px; font-weight: 700;">Il Tuo Risultato</h1>
@@ -191,36 +190,36 @@ function showSuccessMessage(validCount, clueCount, dataIndex, timeTaken) {
     </div>
   `;
 
-    const cluesSection = container.querySelector(".clues-section");
-    for (let i = 0; i < clues.length; i++) {
-        const clue = clues[i];
-        const imageEntry = uploadedImages[i];
-        const correctEntry = dataIndex.find(([index]) => index === i);
-        const correct = correctEntry ? correctEntry[1] : false;
-        const hasImage = imageEntry && imageEntry.url;
+  const cluesSection = container.querySelector(".clues-section");
+  for (let i = 0; i < clues.length; i++) {
+    const clue = clues[i];
+    const imageEntry = uploadedImages[i];
+    const correctEntry = dataIndex.find(([index]) => index === i);
+    const correct = correctEntry ? correctEntry[1] : false;
+    const hasImage = imageEntry && imageEntry.url;
 
-        let clueStyle = '';
-        let reasonText = '';
-        let status = '';
-        if (!hasImage) {
-            clueStyle = "background: #fff3cd; border-left: 4px solid #ffc107;";
-            reasonText = '<div style="font-size: 0.85rem; color: #666; margin-top: 5px; font-style: italic;">Nessuna foto inviata</div>';
-            status = '🟡';
-        } else if (!correct) {
-            clueStyle = "background: #f8d7da; border-left: 4px solid #dc3545;";
-            reasonText = '<div style="font-size: 0.85rem; color: #666; margin-top: 5px; font-style: italic;">Oggetto sbagliato</div>';
-            status = '❌';
-        } else {
-            clueStyle = "background: #d4edda; border-left: 4px solid #28a745;";
-            status = '✅';
-        }
+    let clueStyle = '';
+    let reasonText = '';
+    let status = '';
+    if (!hasImage) {
+      clueStyle = "background: #fff3cd; border-left: 4px solid #ffc107;";
+      reasonText = '<div style="font-size: 0.85rem; color: #666; margin-top: 5px; font-style: italic;">Nessuna foto inviata</div>';
+      status = '🟡';
+    } else if (!correct) {
+      clueStyle = "background: #f8d7da; border-left: 4px solid #dc3545;";
+      reasonText = `<div style="font-size: 0.85rem; color: #666; margin-top: 5px; font-style: italic;">${dataIndex[i][2]}</div>`;
+      status = '❌';
+    } else {
+      clueStyle = "background: #d4edda; border-left: 4px solid #28a745;";
+      status = '✅';
+    }
 
-        const imageHTML = hasImage
-            ? `<img src="${imageEntry.url}" alt="Clue ${i + 1}" style="width: 120px; height: 90px; border-radius: 8px; object-fit: cover; border: 2px solid #ddd;" />`
-            : `<div style="width: 120px; height: 90px; background: #f8f9fa; border: 2px dashed #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #999;">📷</div>`;
+    const imageHTML = hasImage
+      ? `<img src="${imageEntry.url}" alt="Clue ${i + 1}" style="width: 120px; height: 90px; border-radius: 8px; object-fit: cover; border: 2px solid #ddd;" />`
+      : `<div style="width: 120px; height: 90px; background: #f8f9fa; border: 2px dashed #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #999;">📷</div>`;
 
-        const clueItem = document.createElement("div");
-        clueItem.setAttribute("style", `
+    const clueItem = document.createElement("div");
+    clueItem.setAttribute("style", `
       display: flex;
       align-items: center;
       padding: 15px;
@@ -230,7 +229,7 @@ function showSuccessMessage(validCount, clueCount, dataIndex, timeTaken) {
       animation: fadeIn 0.5s ease-out;
       ${clueStyle}
     `);
-        clueItem.innerHTML = `
+    clueItem.innerHTML = `
 <div style="font-size: 0.8rem; height: 147px; margin-right: 15px; min-width: 20px; flex-shrink: 0;">${status}</div>
   <div style="display: flex; flex-direction: column; gap: 10px; flex: 1;">
     <div style="font-weight: 500; color: #333;">${clue.question}${reasonText}</div>
@@ -239,15 +238,15 @@ function showSuccessMessage(validCount, clueCount, dataIndex, timeTaken) {
     </div>
   </div>
 `;
-        cluesSection.appendChild(clueItem);
-    }
+    cluesSection.appendChild(clueItem);
+  }
 
-    clueContainer.appendChild(container);
-    window.scrollTo(0, 0);
+  clueContainer.appendChild(container);
+  window.scrollTo(0, 0);
 }
 
 function createStat(icon, value, label) {
-    return `
+  return `
     <div style="
       text-align: center;
       padding: 20px;
