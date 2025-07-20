@@ -14,16 +14,44 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
     <title>Caccia al Tesoro</title>
-    <meta property="og:image" content="https://cdn.sanity.io/images/bfoi0uj5/production/4da46ea6d62493add6b7779be153bd2505abc943-917x675.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:title" content="Caccia al Tesoro" />
-    <meta property="og:description" content="Pagina Iniziale" />
-
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="icon" href="./favicon.ico" />
 
     <style>
+           .animate-slideUp {
+        animation: slideUp 0.5s ease-out;
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (max-width: 640px) {
+        .stats {
+          flex-direction: row !important;
+          justify-content: space-between !important;
+          gap: 5px !important;
+        }
+        .stat-item {
+          min-width: 80px !important;
+          padding: 2px !important;
+          flex: 1 !important;
+        }
+        .stat-icon {
+          font-size: 1rem !important;
+        }
+        .stat-number {
+          font-size: 0.8rem !important;
+        }
+        .stat-label {
+          font-size: 0.5rem !important;
+        }
+      }
       body {
         font-family: Arial, sans-serif;
         max-width: 600px;
@@ -64,6 +92,8 @@
         /* For screens smaller than 640px */
         .clue-container {
           padding: 2rem;
+              margin-top: -4rem; /* Avoid using exact pixel values like -67px */
+
           /* Adjust padding */
         }
 
@@ -208,6 +238,37 @@
         border-radius: 5px;
       }
 
+       .progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #e9ecef;
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    width: 0%;
+    transition: width 1s ease-out;
+    animation: fillProgress 1.5s ease-out;
+  }
+  /* .clue-item { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; }
+.flex.items-center.justify-center { display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; } */
+
+      @media (max-width: 768px) {
+        .uploaded-image {
+          width: 100px;
+          height: 75px;
+        }
+
+        .no-image-placeholder {
+          width: 100px;
+          height: 75px;
+        }
+      }
+
       /* //New Style */
     </style>
     <style>
@@ -341,22 +402,24 @@
         .periodiq-login .heading {
           font-size: 28px;
         }
-        .logo {
-        text-align: center;
-        margin: auto !important;
-        font-size: 24px;
-        color: #333;
-        margin-bottom: -20px;
-        font-weight: 700;
-        height: 100px;
-        width: 200px;
-      }
+          .logo {
+          text-align: center;
+          margin: auto !important;
+          font-size: 24px;
+          color: #333;
+          margin-bottom: -20px;
+          font-weight: 700;
+          height: 100px;
+          width: 200px;
+        }
 
       }
     </style>
   </head>
 
   <body>
+        <img class="logo" src="./Image.svg" alt="" />
+
     <div class="text-center mt-12">
     <!-- <h1 class="text-3xl font-bold mb-6">Caccia al Tesoro</h1>
     <div id="passcodeSection">
@@ -370,7 +433,6 @@
 
       <div id="errorMessage"></div>
     </div> -->
-    <img class="logo" src="./Image.svg" alt="" />
 
     <div class="periodiq-login">
       <div class="container" id="passcodeSection">
@@ -387,7 +449,7 @@
       </div>
     </div>
     <div id="mainContent">
-      <div id="clueContainer"></div>
+<div id="clueContainer" style= "margin-top: -3rem;"></div>
       <div id="uploadSection">
         <div id="uploadResult"></div>
       </div>
