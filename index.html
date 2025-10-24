@@ -459,8 +459,11 @@
   </div>
    
   </body>
-
+<noscript>
+  <div style="color:red;">It seems JavaScript is disabled or blocked. Please allow JS to continue.</div>
+</noscript>
   <script>
+    
     function checkPasscode() {
       const passcode = document.getElementById("passcodeInput").value;
       const submitButton = document.getElementById("submitPasscode");
@@ -703,6 +706,7 @@
                   quality: 2,
                   alpha: false,
                 });
+                
 
                 const compressedBlob = await picaInstance.toBlob(resizedCanvas, "image/jpeg", 0.3);
 
@@ -721,8 +725,32 @@
                 };
                 bufferReader.readAsArrayBuffer(compressedBlob);
               } catch (error) {
-                console.error("Error compressing image:", error);
-              }
+  showErrorMessage("Per favore disattiva l'ad blocker per questo sito e riprova.");
+
+  const oldButton = document.querySelector(".navigation-button-next");
+
+  if (oldButton) {
+    // Clone the button (without event listeners)
+    const newButton = oldButton.cloneNode(true);
+
+    // Change style to gray
+    newButton.classList.remove("bg-blue-600", "hover:bg-blue-700");
+    newButton.classList.add("bg-gray-500", "hover:bg-gray-600");
+
+    // Disable button and make it look disabled
+    newButton.disabled = true;
+
+    // Assign new click behavior
+    newButton.onclick = function () {
+    };
+
+    // Replace the original with the new one
+    oldButton.parentNode.replaceChild(newButton, oldButton);
+  }
+
+  console.error("Error compressing image:", error);
+}
+
             };
           }
         }
