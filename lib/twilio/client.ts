@@ -204,12 +204,8 @@ export async function sendSMSMessage(
       body,
     }
 
-    // Use phone number if available, otherwise use messaging service
-    if (smsFromNumber) {
-      messageParams.from = smsFromNumber
-    } else {
-      messageParams.messagingServiceSid = messagingServiceSid
-    }
+    // Use Alphanumeric Sender ID for supported countries, fallback to phone number
+    messageParams.from = 'PeriodiQ'
 
     const message = await twilioClient.messages.create(messageParams)
 
