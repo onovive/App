@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 
 const COUNTRY_CODES = [
   { code: '+39', country: 'IT', flag: '🇮🇹' },
+  { code: '+44', country: 'GB', flag: '🇬🇧' },
+  { code: '+92', country: 'PK', flag: '🇵🇰' },
 ]
 
 type WhatsAppStep = 'phone' | 'otp'

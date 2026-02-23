@@ -58,11 +58,12 @@ export default function SubscribeButton({
           console.log('Successfully subscribed!')
           setIsSubscribed(true)
 
-          // Send WhatsApp notification (non-blocking)
+          // Send notification (keepalive ensures it survives page reload)
           fetch('/api/notifications/hunt-joined', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ huntId, userId }),
+            keepalive: true,
           }).catch((err) => console.error('Notification error:', err))
 
           window.location.reload()

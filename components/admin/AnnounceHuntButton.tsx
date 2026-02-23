@@ -29,8 +29,6 @@ export default function AnnounceHuntButton({ huntId, huntTitle }: AnnounceHuntBu
       if (!response.ok) {
         throw new Error(data.error || 'Failed to send announcement')
       }
-
-      alert(`Announcement logged!\n\nNote: SMS notifications are currently disabled.\nNotification saved to database.`)
     } catch (error: any) {
       console.error('Announce error:', error)
       alert(`Error: ${error.message}`)
