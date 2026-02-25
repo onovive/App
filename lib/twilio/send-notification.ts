@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendSMSMessage } from './client'
 
 export type NotificationType =
@@ -23,7 +23,10 @@ export async function sendNotification({
   message,
   phoneNumber,
 }: SendNotificationParams): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createServerSupabaseClient()
+  const supabase = createAdminSupabaseClient()
+  if (!supabase) {
+    return { success: false, error: 'Service role key not configured' }
+  }
 
   // Send SMS
   const smsResult = await sendSMSMessage(phoneNumber, message)
@@ -76,7 +79,10 @@ export async function broadcastNotification({
   failed: number
   errors: string[]
 }> {
-  const supabase = await createServerSupabaseClient()
+  const supabase = createAdminSupabaseClient()
+  if (!supabase) {
+    return { sent: 0, failed: 0, errors: ['Service role key not configured'] }
+  }
 
   let users: { id: string; phone_number: string }[] = []
 

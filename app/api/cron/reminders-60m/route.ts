@@ -1,27 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { broadcastNotification } from '@/lib/twilio/send-notification'
 
-// Verify cron secret for security
-// function verifyCronSecret(request: NextRequest): boolean {
-//   const authHeader = request.headers.get('authorization')
-//   const cronSecret = process.env.CRON_SECRET
-
-//   if (!cronSecret) {
-//     console.warn('CRON_SECRET not configured')
-//     return true // Allow in development
-//   }
-
-//   return authHeader === `Bearer ${cronSecret}`
-// }
-
-export async function GET(request: NextRequest) {
-  // if (!verifyCronSecret(request)) {
-  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  // }
-
+export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = createAdminSupabaseClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Service role key not configured' }, { status: 500 })
+    }
 
     // Find hunts starting in approximately 60 minutes (55-65 minute window)
     const now = new Date()
@@ -33,7 +19,7 @@ export async function GET(request: NextRequest) {
       .select('id, title, start_time')
       .gte('start_time', in55Minutes.toISOString())
       .lte('start_time', in65Minutes.toISOString())
-      .eq('status', 'active') as { data: { id: string; title: string; start_time: string }[] | null; error: any }
+      .eq('status', 'upcoming') as { data: { id: string; title: string; start_time: string }[] | null; error: any }
 
     if (error) {
       console.error('Error fetching hunts:', error)

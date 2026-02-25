@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { broadcastNotification } from '@/lib/twilio/send-notification'
 
 export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = createAdminSupabaseClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Service role key not configured' }, { status: 500 })
+    }
     const now = new Date()
     const results = {
       activatedHunts: [] as string[],

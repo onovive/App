@@ -3,7 +3,6 @@ import Link from 'next/link'
 import DeleteHuntButton from '@/components/admin/DeleteHuntButton'
 import DuplicateHuntButton from '@/components/admin/DuplicateHuntButton'
 import HuntStatusDropdown from '@/components/admin/HuntStatusDropdown'
-import AnnounceHuntButton from '@/components/admin/AnnounceHuntButton'
 import { Database } from '@/lib/types/database'
 
 // Revalidate every 30 seconds for better performance
@@ -76,7 +75,7 @@ export default async function HuntsPage() {
                           <HuntStatusDropdown huntId={hunt.id} currentStatus={hunt.status} />
                         </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {hunt.start_time.replace('T', ' ').substring(0, 16)}
+                        {new Date(hunt.start_time).toLocaleString('sv-SE', { timeZone: 'Europe/Rome' }).substring(0, 16)}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         {hunt.clues_count} clues
@@ -85,7 +84,6 @@ export default async function HuntsPage() {
                         {hunt.created_at.split('T')[0]}
                       </td>
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 space-x-3">
-                          <AnnounceHuntButton huntId={hunt.id} huntTitle={hunt.title} />
                           <Link
                             href={`/admin/hunts/${hunt.id}/participants`}
                             className="text-blue-600 hover:text-blue-900"

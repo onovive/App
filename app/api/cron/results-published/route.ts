@@ -1,27 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { broadcastNotification } from '@/lib/twilio/send-notification'
 
-// Verify cron secret for security
-// function verifyCronSecret(request: NextRequest): boolean {
-//   const authHeader = request.headers.get('authorization')
-//   const cronSecret = process.env.CRON_SECRET
-
-//   if (!cronSecret) {
-//     console.warn('CRON_SECRET not configured')
-//     return true // Allow in development
-//   }
-
-//   return authHeader === `Bearer ${cronSecret}`
-// }
-
-export async function GET(request: NextRequest) {
-  // if (!verifyCronSecret(request)) {
-  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  // }
-
+export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = createAdminSupabaseClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Service role key not configured' }, { status: 500 })
+    }
 
     // Find hunts that started approximately 24 hours ago (23-25 hour window)
     // Rankings become available after 24 hours

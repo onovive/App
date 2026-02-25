@@ -28,12 +28,14 @@ export default function HuntForm({ hunt }: HuntFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(hunt?.cover_image_url || null)
 
   const [formData, setFormData] = useState(() => {
-    const startTimeValue = hunt?.start_time ? hunt.start_time.substring(0, 16) : ''
-
-    console.log('HuntForm Init Debug:', {
-      huntStartTime: hunt?.start_time,
-      extractedValue: startTimeValue
-    })
+    let startTimeValue = ''
+    if (hunt?.start_time) {
+      // Convert UTC time from DB to Rome local time for display
+      const utcDate = new Date(hunt.start_time)
+      const romeStr = utcDate.toLocaleString('sv-SE', { timeZone: 'Europe/Rome' })
+      // sv-SE locale gives "YYYY-MM-DD HH:mm:ss" format
+      startTimeValue = romeStr.substring(0, 16).replace(' ', 'T')
+    }
 
     return {
       title: hunt?.title || '',
@@ -88,10 +90,19 @@ export default function HuntForm({ hunt }: HuntFormProps) {
         third: formData.prize_third,
       }
 
-      // Store the exact time as entered by user
       // datetime-local gives us "YYYY-MM-DDTHH:mm" format
-      // Add seconds and +00:00 to match timestamptz format
-      const startTimeISO = formData.start_time + ':00+00:00'
+      // Convert from Rome local time to UTC by getting the correct offset
+      const romeDate = new Date(formData.start_time)
+      const romeOffset = new Intl.DateTimeFormat('en', {
+        timeZone: 'Europe/Rome',
+        timeZoneName: 'shortOffset',
+      }).formatToParts(romeDate).find(p => p.type === 'timeZoneName')?.value || '+01:00'
+      // romeOffset is like "GMT+1" or "GMT+2", convert to "+01:00" / "+02:00"
+      const offsetMatch = romeOffset.match(/GMT([+-])(\d+)/)
+      const tzOffset = offsetMatch
+        ? `${offsetMatch[1]}${offsetMatch[2].padStart(2, '0')}:00`
+        : '+01:00'
+      const startTimeISO = formData.start_time + ':00' + tzOffset
 
       console.log('HuntForm Save Debug:', {
         formDataStartTime: formData.start_time,
@@ -122,12 +133,26 @@ export default function HuntForm({ hunt }: HuntFormProps) {
         alert('Hunt updated successfully!')
       } else {
         // Create new hunt
-        const { error } = await (supabase as any)
+        const { data: newHunt, error } = await (supabase as any)
           .from('hunts')
           .insert(huntData)
+          .select('id')
+          .single()
 
         if (error) throw error
-        alert('Hunt created successfully!')
+
+        // Auto-announce to all users
+        try {
+          await fetch('/api/notifications/hunt-announced', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ huntId: newHunt.id }),
+          })
+        } catch (announceErr) {
+          console.error('Auto-announce failed:', announceErr)
+        }
+
+        alert('Hunt created and announced!')
       }
 
       router.push('/admin/hunts')

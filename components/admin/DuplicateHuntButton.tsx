@@ -87,7 +87,18 @@ export default function DuplicateHuntButton({ huntId }: DuplicateHuntButtonProps
         }
       }
 
-      alert('Caccia duplicata con successo!')
+      // Auto-announce the duplicated hunt
+      try {
+        await fetch('/api/notifications/hunt-announced', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ huntId: newHunt.id }),
+        })
+      } catch (announceErr) {
+        console.error('Auto-announce failed:', announceErr)
+      }
+
+      alert('Caccia duplicata e annunciata!')
       router.refresh()
     } catch (error) {
       console.error('Error duplicating hunt:', error)
