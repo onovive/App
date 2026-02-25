@@ -63,9 +63,10 @@ export default async function HuntDetailsPage({
   const hasCompleted = !!participationResult.data?.completed_at
   const participantCount = participantCountResult.count || 0
 
-  // Format start time - displays time as stored in database without conversion
   const formatStartTime = (startTime: string) => {
-    const [datePart, timePart] = startTime.split('T')
+    const date = new Date(startTime)
+    const romeStr = date.toLocaleString('sv-SE', { timeZone: 'Europe/Rome' })
+    const [datePart, timePart] = romeStr.split(' ')
     const [, month, day] = datePart.split('-')
     const [hour, minute] = timePart.split(':')
     const monthNames = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC']

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { sendNotification } from '@/lib/twilio/send-notification'
 
 export async function POST(request: NextRequest) {
@@ -25,7 +25,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createServerSupabaseClient()
+    const supabase = createAdminSupabaseClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Service role key not configured' }, { status: 500 })
+    }
 
     // Get user profile with phone number
     const { data: profile, error: profileError } = await supabase

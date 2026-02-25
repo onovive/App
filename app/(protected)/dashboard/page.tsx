@@ -57,7 +57,10 @@ export default async function DashboardPage() {
   }).reverse() || []
 
   const formatStartTime = (startTime: string) => {
-    const [datePart, timePart] = startTime.split('T')
+    const date = new Date(startTime)
+    const romeStr = date.toLocaleString('sv-SE', { timeZone: 'Europe/Rome' })
+    // romeStr is "YYYY-MM-DD HH:mm:ss"
+    const [datePart, timePart] = romeStr.split(' ')
     const [, month, day] = datePart.split('-')
     const [hour, minute] = timePart.split(':')
     const monthNames = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC']
