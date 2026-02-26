@@ -37,10 +37,12 @@ export async function POST(request: NextRequest) {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
+      timeZone: 'Europe/Rome',
     })
     const timeStr = startDate.toLocaleTimeString('it-IT', {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'Europe/Rome',
     })
 
     const message = `Nuova Caccia al Tesoro: ${hunt.title}!\n\nInizio: ${dateStr} alle ${timeStr}\n\nIscriviti subito nell'app per partecipare!`

@@ -145,6 +145,12 @@ export default async function DashboardPage() {
                     </div>
 
                     <div className="text-xs text-[#666] mt-[5px]">
+                      Inizio:{' '}
+                      <span className="text-[#4CAF50] font-bold">
+                        {formatStartTime(hunt.start_time)}
+                      </span>
+                    </div>
+                    <div className="text-xs text-[#666] mt-[5px]">
                       Indizi: {hunt.clues_count}
                     </div>
 

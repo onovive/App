@@ -69,10 +69,12 @@ export async function POST(request: NextRequest) {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
+      timeZone: 'Europe/Rome',
     })
     const timeStr = startDate.toLocaleTimeString('it-IT', {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'Europe/Rome',
     })
 
     const message = `Sei iscritto a: ${hunt.title}!\n\nLa caccia iniziera' ${dateStr} alle ${timeStr}.\n\nTi avviseremo prima dell'inizio. Buona fortuna!`

@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import DeleteHuntButton from '@/components/admin/DeleteHuntButton'
 import DuplicateHuntButton from '@/components/admin/DuplicateHuntButton'
+import AnnounceHuntButton from '@/components/admin/AnnounceHuntButton'
 import HuntStatusDropdown from '@/components/admin/HuntStatusDropdown'
 import { Database } from '@/lib/types/database'
 
@@ -102,6 +103,7 @@ export default async function HuntsPage() {
                           >
                             Edit
                           </Link>
+                          <AnnounceHuntButton huntId={hunt.id} huntTitle={hunt.title} />
                           <DuplicateHuntButton huntId={hunt.id} />
                           <DeleteHuntButton huntId={hunt.id} huntTitle={hunt.title} />
                         </td>
