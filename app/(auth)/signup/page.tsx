@@ -68,6 +68,7 @@ export default function SignupPage() {
     setIsLoading(true)
     setError('')
 
+    
     try {
       const response = await fetch('/api/auth/whatsapp/verify-otp', {
         method: 'POST',
