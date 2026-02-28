@@ -32,21 +32,32 @@ export async function GET() {
       if (!error) {
         results.activatedHunts.push(hunt.title)
 
-        // Send "Hunt Starting" notification to all participants
-        const message = `La caccia "${hunt.title}" sta iniziando ORA!\n\nApri l'app e inizia a giocare. Buona fortuna!`
+        // Dedup: only send if not already sent by hunt-start cron
+        const { data: alreadySent } = await (supabase as any)
+          .from('notifications')
+          .select('id')
+          .eq('hunt_id', hunt.id)
+          .in('notification_type', ['hunt_starting', 'hunt_started'])
+          .eq('status', 'sent')
+          .limit(1)
+          .single()
 
-        const notifResult = await broadcastNotification({
-          huntId: hunt.id,
-          type: 'hunt_starting',
-          message,
-          userFilter: { huntParticipants: hunt.id },
-        })
+        if (!alreadySent) {
+          const message = `La caccia "${hunt.title}" sta iniziando ORA!\n\nApri l'app e inizia a giocare. Buona fortuna!`
 
-        results.notifications.push({
-          hunt: hunt.title,
-          type: 'hunt_starting',
-          ...notifResult,
-        })
+          const notifResult = await broadcastNotification({
+            huntId: hunt.id,
+            type: 'hunt_starting',
+            message,
+            userFilter: { huntParticipants: hunt.id },
+          })
+
+          results.notifications.push({
+            hunt: hunt.title,
+            type: 'hunt_starting',
+            ...notifResult,
+          })
+        }
       }
     }
 
@@ -69,40 +80,51 @@ export async function GET() {
       if (!error) {
         results.completedHunts.push(hunt.title)
 
-        // Get winner
-        const { data: winner } = await supabase
-          .from('hunt_participants')
-          .select(`
-            user_id,
-            total_time_seconds,
-            profiles!inner (
-              username
-            )
-          `)
+        // Dedup: only send if not already sent by results-published cron
+        const { data: alreadySent } = await (supabase as any)
+          .from('notifications')
+          .select('id')
           .eq('hunt_id', hunt.id)
-          .not('completed_at', 'is', null)
-          .order('total_time_seconds', { ascending: true })
+          .eq('notification_type', 'hunt_completed')
+          .eq('status', 'sent')
           .limit(1)
           .single()
 
-        const winnerName = (winner as any)?.profiles?.username || 'Unknown'
+        if (!alreadySent) {
+          // Get winner
+          const { data: winner } = await supabase
+            .from('hunt_participants')
+            .select(`
+              user_id,
+              total_time_seconds,
+              profiles!inner (
+                username
+              )
+            `)
+            .eq('hunt_id', hunt.id)
+            .not('completed_at', 'is', null)
+            .order('total_time_seconds', { ascending: true })
+            .limit(1)
+            .single()
 
-        // Send "Results Published" notification to all participants
-        const message = `Classifica disponibile per "${hunt.title}"!\n\nIl vincitore e' ${winnerName}!\n\nGuarda i risultati nell'app.`
+          const winnerName = (winner as any)?.profiles?.username || 'Unknown'
 
-        const notifResult = await broadcastNotification({
-          huntId: hunt.id,
-          type: 'hunt_completed',
-          message,
-          userFilter: { huntParticipants: hunt.id },
-        })
+          const message = `Classifica disponibile per "${hunt.title}"!\n\nIl vincitore e' ${winnerName}!\n\nGuarda i risultati nell'app.`
 
-        results.notifications.push({
-          hunt: hunt.title,
-          type: 'results_published',
-          winner: winnerName,
-          ...notifResult,
-        })
+          const notifResult = await broadcastNotification({
+            huntId: hunt.id,
+            type: 'hunt_completed',
+            message,
+            userFilter: { huntParticipants: hunt.id },
+          })
+
+          results.notifications.push({
+            hunt: hunt.title,
+            type: 'results_published',
+            winner: winnerName,
+            ...notifResult,
+          })
+        }
       }
     }
 

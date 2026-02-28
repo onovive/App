@@ -29,6 +29,18 @@ export async function GET() {
     const results = []
 
     for (const hunt of hunts || []) {
+      // Dedup: check if we already sent a hunt_started notification for this hunt
+      const { data: alreadySent } = await (supabase as any)
+        .from('notifications')
+        .select('id')
+        .eq('hunt_id', hunt.id)
+        .eq('notification_type', 'hunt_started')
+        .eq('status', 'sent')
+        .limit(1)
+        .single()
+
+      if (alreadySent) continue
+
       const message = `${hunt.title} e' iniziata! Buona fortuna!`
 
       const result = await broadcastNotification({
@@ -49,7 +61,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      huntsProcessed: hunts?.length || 0,
+      huntsProcessed: results.length,
       results,
     })
   } catch (error) {

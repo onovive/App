@@ -9,18 +9,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Service role key not configured' }, { status: 500 })
     }
 
-    // Find hunts that started approximately 24 hours ago (23-25 hour window)
-    // Rankings become available after 24 hours
-    const now = new Date()
-    const hours23Ago = new Date(now.getTime() - 25 * 60 * 60 * 1000)
-    const hours25Ago = new Date(now.getTime() - 23 * 60 * 60 * 1000)
-
+    // Find completed hunts that haven't had results notifications sent yet
     const { data: hunts, error } = await supabase
       .from('hunts')
       .select('id, title, start_time')
-      .gte('start_time', hours23Ago.toISOString())
-      .lte('start_time', hours25Ago.toISOString())
-      .eq('status', 'active') as { data: { id: string; title: string; start_time: string }[] | null; error: any }
+      .eq('status', 'completed') as { data: { id: string; title: string; start_time: string }[] | null; error: any }
 
     if (error) {
       console.error('Error fetching hunts:', error)
@@ -30,7 +23,19 @@ export async function GET() {
     const results = []
 
     for (const hunt of hunts || []) {
-      // Get the winner (participant with lowest total_time_seconds who completed)
+      // Dedup: check if we already sent a results notification for this hunt
+      const { data: alreadySent } = await (supabase as any)
+        .from('notifications')
+        .select('id')
+        .eq('hunt_id', hunt.id)
+        .eq('notification_type', 'hunt_completed')
+        .eq('status', 'sent')
+        .limit(1)
+        .single()
+
+      if (alreadySent) continue
+
+      // Get the winner
       const { data: winner } = await supabase
         .from('hunt_participants')
         .select(`
@@ -69,7 +74,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      huntsProcessed: hunts?.length || 0,
+      huntsProcessed: results.length,
       results,
     })
   } catch (error) {

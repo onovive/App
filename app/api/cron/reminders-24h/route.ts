@@ -29,10 +29,25 @@ export async function GET() {
     const results = []
 
     for (const hunt of hunts || []) {
+      // Dedup: check if we already sent a 24h reminder for this hunt
+      // Use hunt_reminder type but check message content to distinguish from 60m
+      const { data: alreadySent } = await (supabase as any)
+        .from('notifications')
+        .select('id')
+        .eq('hunt_id', hunt.id)
+        .eq('notification_type', 'hunt_reminder')
+        .eq('status', 'sent')
+        .ilike('message_content', '%domani%')
+        .limit(1)
+        .single()
+
+      if (alreadySent) continue
+
       const startDate = new Date(hunt.start_time)
       const timeStr = startDate.toLocaleTimeString('it-IT', {
         hour: '2-digit',
         minute: '2-digit',
+        timeZone: 'Europe/Rome',
       })
 
       const message = `Promemoria: ${hunt.title} inizia domani alle ${timeStr}! Preparati per la caccia al tesoro.`
@@ -55,7 +70,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      huntsProcessed: hunts?.length || 0,
+      huntsProcessed: results.length,
       results,
     })
   } catch (error) {
