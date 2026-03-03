@@ -27,9 +27,33 @@ export async function GET() {
 
     let sent = 0
     let failed = 0
+    let skipped = 0
     const errors: string[] = []
 
     for (const msg of dueMessages || []) {
+      // Dedup: skip if this user already got a similar notification from the cron-based system
+      const { data: alreadyNotified } = await (supabase as any)
+        .from('notifications')
+        .select('id')
+        .eq('user_id', msg.user_id)
+        .eq('hunt_id', msg.hunt_id)
+        .eq('status', 'sent')
+        .limit(1)
+
+      // Map scheduled message types to cron notification types for dedup
+      const isReminderType = msg.notification_type === 'hunt_reminder_60m'
+      const isStartType = msg.notification_type === 'hunt_starting'
+
+      if (alreadyNotified && alreadyNotified.length > 0 && (isReminderType || isStartType)) {
+        // Already sent by cron system, mark as sent to avoid retry
+        await (supabase as any)
+          .from('scheduled_messages')
+          .update({ status: 'sent' })
+          .eq('id', msg.id)
+        skipped++
+        continue
+      }
+
       const result = await sendSMSMessage(msg.phone_number, msg.message_body)
 
       if (result.success) {
