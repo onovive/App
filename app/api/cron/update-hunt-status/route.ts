@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { broadcastNotification } from '@/lib/twilio/send-notification'
 
+export const dynamic = 'force-dynamic'
+export const maxDuration = 60
+
 export async function GET() {
   try {
     const supabase = createAdminSupabaseClient()

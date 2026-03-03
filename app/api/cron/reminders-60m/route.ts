@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { broadcastNotification } from '@/lib/twilio/send-notification'
 
+export const dynamic = 'force-dynamic'
+export const maxDuration = 60
+
 export async function GET() {
   try {
     const supabase = createAdminSupabaseClient()
@@ -9,22 +12,32 @@ export async function GET() {
       return NextResponse.json({ error: 'Service role key not configured' }, { status: 500 })
     }
 
-    // Find hunts starting in approximately 60 minutes (55-65 minute window)
     const now = new Date()
-    const in55Minutes = new Date(now.getTime() + 55 * 60 * 1000)
-    const in65Minutes = new Date(now.getTime() + 65 * 60 * 1000)
 
-    const { data: hunts, error } = await supabase
+    // Wider window: 45-75 minutes from now (30-min window instead of 10)
+    // This ensures the cron (every 5 min) never misses a hunt
+    const windowStart = new Date(now.getTime() + 45 * 60 * 1000)
+    const windowEnd = new Date(now.getTime() + 75 * 60 * 1000)
+
+    console.log('reminders-60m cron running:', {
+      now: now.toISOString(),
+      windowStart: windowStart.toISOString(),
+      windowEnd: windowEnd.toISOString(),
+    })
+
+    const { data: hunts, error } = await (supabase as any)
       .from('hunts')
       .select('id, title, start_time')
-      .gte('start_time', in55Minutes.toISOString())
-      .lte('start_time', in65Minutes.toISOString())
-      .eq('status', 'upcoming') as { data: { id: string; title: string; start_time: string }[] | null; error: any }
+      .gte('start_time', windowStart.toISOString())
+      .lte('start_time', windowEnd.toISOString())
+      .eq('status', 'upcoming')
 
     if (error) {
       console.error('Error fetching hunts:', error)
       return NextResponse.json({ error: 'Failed to fetch hunts' }, { status: 500 })
     }
+
+    console.log('reminders-60m found hunts:', hunts?.length || 0, hunts?.map((h: any) => ({ id: h.id, title: h.title, start_time: h.start_time })))
 
     const results = []
 
@@ -38,7 +51,10 @@ export async function GET() {
         .eq('status', 'sent')
         .limit(1)
 
-      if (existingNotifs && existingNotifs.length > 0) continue
+      if (existingNotifs && existingNotifs.length > 0) {
+        console.log('reminders-60m skipping (already sent):', hunt.title)
+        continue
+      }
 
       const message = `${hunt.title} inizia tra 1 ora! Preparati!`
 
@@ -50,6 +66,8 @@ export async function GET() {
           huntParticipants: hunt.id,
         },
       })
+
+      console.log('reminders-60m broadcast result:', { hunt: hunt.title, ...result })
 
       results.push({
         huntId: hunt.id,
