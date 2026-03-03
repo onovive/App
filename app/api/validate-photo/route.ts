@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import OpenAI from 'openai'
 import { Database } from '@/lib/types/database'
 
 type Clue = Database['public']['Tables']['clues']['Row']
 
-const genAI = process.env.GOOGLE_AI_API_KEY
-  ? new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   : null
 
 export async function POST(request: NextRequest) {
@@ -33,9 +33,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Clue not found' }, { status: 404 })
     }
 
-    // If no Gemini API key, auto-approve
-    if (!genAI) {
-      console.log('No Gemini API key - auto-approving photo')
+    // If no OpenAI API key, auto-approve
+    if (!openai) {
+      console.log('No OpenAI API key - auto-approving photo')
       return await saveAndRespond(supabase, userId, huntId, clueId, true, 'auto-approved: no API key')
     }
 
@@ -44,18 +44,10 @@ export async function POST(request: NextRequest) {
     let rawResponse = ''
 
     try {
-      // Fetch the image as base64
-      const imageResponse = await fetch(photoUrl)
-      if (!imageResponse.ok) {
-        throw new Error(`Image fetch failed: ${imageResponse.status}`)
-      }
-      const imageBuffer = await imageResponse.arrayBuffer()
-      const imageBase64 = Buffer.from(imageBuffer).toString('base64')
-      const contentType = imageResponse.headers.get('content-type') || 'image/jpeg'
-
       // Build prompt
       const criteria = clue.correct_answer_criteria
       const criteriaText = (typeof criteria === 'string' && criteria) ? criteria : clue.clue_text
+
       const prompt = `You validate photos for a scavenger hunt. The player must find and photograph the item described.
 
 CLUE: ${clue.clue_text}
@@ -68,38 +60,27 @@ Be fair: accept if the item is visible. Reject if the item is completely absent 
 
 Reply with ONLY one word: giusta or sbagliata`
 
-      // Try models in order (fallback chain)
-      const modelNames = ['gemini-2.0-flash', 'gemini-1.5-flash']
-      let aiResult = null
-
-      for (const modelName of modelNames) {
-        try {
-          const model = genAI.getGenerativeModel({ model: modelName })
-          aiResult = await model.generateContent([
-            prompt,
-            {
-              inlineData: {
-                data: imageBase64,
-                mimeType: contentType,
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        max_tokens: 10,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              {
+                type: 'image_url',
+                image_url: { url: photoUrl },
               },
-            },
-          ])
-          console.log('Gemini model used successfully:', modelName)
-          break
-        } catch (modelError: any) {
-          console.warn(`Model ${modelName} failed:`, modelError.message)
-          continue
-        }
-      }
+            ],
+          },
+        ],
+      })
 
-      if (!aiResult) {
-        throw new Error('All Gemini models failed')
-      }
+      rawResponse = (response.choices[0]?.message?.content || '').trim().toLowerCase()
+      console.log('OpenAI raw response:', rawResponse, 'for clue:', clue.clue_text)
 
-      rawResponse = aiResult.response.text().trim().toLowerCase()
-      console.log('Gemini raw response:', rawResponse, 'for clue:', clue.clue_text)
-
-      // Trust the AI response — check both positive and negative signals
+      // Check response
       const hasNegative = ['sbagliata', 'incorrect', 'wrong'].some(s => rawResponse.includes(s))
       const hasPositive = ['giusta', 'correct', 'right'].some(s => rawResponse.includes(s))
 

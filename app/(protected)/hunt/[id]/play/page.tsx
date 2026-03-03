@@ -231,6 +231,56 @@ export default function HuntPlayPage({ params }: HuntPlayPageProps) {
     }
   }
 
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !currentClue) return
+
+    const photoUrl = URL.createObjectURL(file)
+    setCapturedPhoto(photoUrl)
+    setIsUploading(true)
+
+    try {
+      const uploadedUrl = await uploadPhoto(file, huntId, userId, currentClue.id)
+
+      await (supabase as any).from('user_clue_submissions').upsert({
+        user_id: userId,
+        hunt_id: huntId,
+        clue_id: currentClue.id,
+        photo_url: uploadedUrl,
+      })
+
+      const newStatuses = [...photoStatuses]
+      newStatuses[currentClueIndex] = true
+      setPhotoStatuses(newStatuses)
+
+      const newPhotoUrls = [...photoUrls]
+      newPhotoUrls[currentClueIndex] = uploadedUrl
+      setPhotoUrls(newPhotoUrls)
+
+      fetch('/api/validate-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photoUrl: uploadedUrl,
+          clueId: currentClue.id,
+          huntId,
+          userId,
+        }),
+      }).catch((validationError) => {
+        console.error('Validation error:', validationError)
+      })
+
+      setIsUploading(false)
+    } catch (err) {
+      console.error('Gallery upload error:', err)
+      alert('Errore nel caricamento della foto. Riprova.')
+      setIsUploading(false)
+    }
+
+    // Reset input so same file can be re-selected
+    e.target.value = ''
+  }
+
   const handleCapture = async () => {
     try {
       if (!stream) {
@@ -403,6 +453,19 @@ export default function HuntPlayPage({ params }: HuntPlayPageProps) {
                   <span className="w-[22px] h-[22px] bg-[radial-gradient(circle_at_50%_50%,#555_15%,#E0E0E0_20%,#777_60%)] border-2 border-[#555] rounded-full mr-[10px] shadow-[inset_0_0_5px_rgba(0,0,0,0.3)]" />
                   {isUploading ? 'Caricamento...' : hasPhoto ? 'Modifica foto' : 'Scatta una foto'}
                 </button>
+                <label
+                  className={`w-full px-[15px] py-[15px] rounded-lg text-base cursor-pointer transition-all flex items-center justify-center bg-gradient-to-b from-[#E8F0FE] to-[#D2E3FC] text-[#1A73E8] border border-[#AECBFA] shadow-[0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5)] font-medium hover:from-[#D2E3FC] hover:to-[#AECBFA] hover:shadow-[0_3px_6px_rgba(0,0,0,0.15)] ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                >
+                  <svg className="w-5 h-5 mr-[10px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  {isUploading ? 'Caricamento...' : 'Carica dalla galleria'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleGalleryUpload}
+                    className="hidden"
+                    disabled={isUploading}
+                  />
+                </label>
               </div>
             </>
           )}
