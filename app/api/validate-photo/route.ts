@@ -4,7 +4,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { Database } from '@/lib/types/database'
 
 type Clue = Database['public']['Tables']['clues']['Row']
-type HuntParticipant = Database['public']['Tables']['hunt_participants']['Row']
 
 const genAI = process.env.GOOGLE_AI_API_KEY
   ? new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
@@ -34,146 +33,143 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Clue not found' }, { status: 404 })
     }
 
-    // If no Gemini API key, simulate validation
+    // If no Gemini API key, auto-approve
     if (!genAI) {
-      console.log('No Gemini API key - simulating validation')
-      const simulatedResult = {
-        is_correct: Math.random() > 0.3, // 70% success rate
-        confidence: Math.floor(Math.random() * 30) + 70,
-        reasoning: 'Simulated validation (no Gemini API key configured)',
+      console.log('No Gemini API key - auto-approving photo')
+      return await saveAndRespond(supabase, userId, huntId, clueId, true, 'auto-approved: no API key')
+    }
+
+    // Try AI validation — auto-approve on ANY failure so players aren't penalized
+    let isCorrect = true
+    let rawResponse = ''
+
+    try {
+      // Fetch the image as base64
+      const imageResponse = await fetch(photoUrl)
+      if (!imageResponse.ok) {
+        throw new Error(`Image fetch failed: ${imageResponse.status}`)
       }
+      const imageBuffer = await imageResponse.arrayBuffer()
+      const imageBase64 = Buffer.from(imageBuffer).toString('base64')
+      const contentType = imageResponse.headers.get('content-type') || 'image/jpeg'
 
-      // Update submission with result
-      await (supabase as any)
-        .from('user_clue_submissions')
-        .update({
-          is_correct: simulatedResult.is_correct,
-          ai_validation_result: simulatedResult,
-        })
-        .eq('user_id', userId)
-        .eq('hunt_id', huntId)
-        .eq('clue_id', clueId)
+      // Build prompt
+      const criteria = clue.correct_answer_criteria
+      const criteriaText = (typeof criteria === 'string' && criteria) ? criteria : clue.clue_text
+      const prompt = `You validate photos for a scavenger hunt. The player must find and photograph the item described.
 
-      // Update participant correct clues count
-      if (simulatedResult.is_correct) {
-        const { data: participant } = await supabase
-          .from('hunt_participants')
-          .select('correct_clues')
-          .eq('hunt_id', huntId)
-          .eq('user_id', userId)
-          .single<Pick<HuntParticipant, 'correct_clues'>>()
+CLUE: ${clue.clue_text}
+CRITERION: ${criteriaText}
 
-        if (participant) {
-          await (supabase as any)
-            .from('hunt_participants')
-            .update({
-              correct_clues: (participant.correct_clues || 0) + 1,
-            })
-            .eq('hunt_id', huntId)
-            .eq('user_id', userId)
+Reply "giusta" if the photo shows the described item (even partially or at an angle).
+Reply "sbagliata" if the photo clearly does NOT contain the described item.
+
+Be fair: accept if the item is visible. Reject if the item is completely absent or the photo shows something unrelated.
+
+Reply with ONLY one word: giusta or sbagliata`
+
+      // Try models in order (fallback chain)
+      const modelNames = ['gemini-2.0-flash', 'gemini-1.5-flash']
+      let aiResult = null
+
+      for (const modelName of modelNames) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelName })
+          aiResult = await model.generateContent([
+            prompt,
+            {
+              inlineData: {
+                data: imageBase64,
+                mimeType: contentType,
+              },
+            },
+          ])
+          console.log('Gemini model used successfully:', modelName)
+          break
+        } catch (modelError: any) {
+          console.warn(`Model ${modelName} failed:`, modelError.message)
+          continue
         }
       }
 
-      return NextResponse.json(simulatedResult)
-    }
-
-    // Fetch the image as base64
-    const imageResponse = await fetch(photoUrl)
-    const imageBuffer = await imageResponse.arrayBuffer()
-    const imageBase64 = Buffer.from(imageBuffer).toString('base64')
-
-    // Determine mime type
-    const contentType = imageResponse.headers.get('content-type') || 'image/jpeg'
-
-    // Create validation prompt
-    const criteria = clue.correct_answer_criteria
-    // Format criteria as plain text (avoid JSON.stringify adding extra quotes for strings)
-    const criteriaText = typeof criteria === 'string' ? criteria : JSON.stringify(criteria)
-    const prompt = `You are a system that validates photos for a scavenger hunt game.
-
-CLUE
-${clue.clue_text}
-
-CRITERION
-${criteriaText}
-
-TASK
-Decide whether the image satisfies the criterion.
-
-RULES
-- The image is "giusta" if it clearly shows what the clue or criterion describes, even partially.
-- Be generous: if the main subject is recognizable and matches the clue, it is "giusta".
-- The photo does NOT need to be high quality or perfectly framed.
-- Only mark as "sbagliata" if the required object is clearly NOT present at all.
-- If the object appears only inside a screen, display, printed image, or another photo → sbagliata.
-
-OUTPUT
-Reply with ONLY one word: giusta or sbagliata`
-
-    // Call Gemini Vision API
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
-
-    const result_response = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: imageBase64,
-          mimeType: contentType,
-        },
-      },
-    ])
-
-    const responseText = result_response.response.text().trim().toLowerCase()
-    // Check if response contains "giusta" (more flexible than exact match)
-    const isCorrect = responseText.includes('giusta') && !responseText.includes('sbagliata')
-    const result = {
-      is_correct: isCorrect,
-      raw_response: responseText,
-    }
-
-    console.log('Photo validation result:', { clueText: clue.clue_text, criteria: criteriaText, responseText, isCorrect })
-
-    // Update submission with validation result
-    const { error: updateError } = await (supabase as any)
-      .from('user_clue_submissions')
-      .update({
-        is_correct: result.is_correct,
-        ai_validation_result: result,
-      })
-      .eq('user_id', userId)
-      .eq('hunt_id', huntId)
-      .eq('clue_id', clueId)
-
-    if (updateError) {
-      console.error('Error updating submission:', updateError)
-    }
-
-    // Update participant's correct clues count
-    if (result.is_correct) {
-      const { data: participant } = await supabase
-        .from('hunt_participants')
-        .select('correct_clues')
-        .eq('hunt_id', huntId)
-        .eq('user_id', userId)
-        .single<Pick<HuntParticipant, 'correct_clues'>>()
-
-      if (participant) {
-        await (supabase as any)
-          .from('hunt_participants')
-          .update({
-            correct_clues: (participant.correct_clues || 0) + 1,
-          })
-          .eq('hunt_id', huntId)
-          .eq('user_id', userId)
+      if (!aiResult) {
+        throw new Error('All Gemini models failed')
       }
+
+      rawResponse = aiResult.response.text().trim().toLowerCase()
+      console.log('Gemini raw response:', rawResponse, 'for clue:', clue.clue_text)
+
+      // Trust the AI response — check both positive and negative signals
+      const hasNegative = ['sbagliata', 'incorrect', 'wrong'].some(s => rawResponse.includes(s))
+      const hasPositive = ['giusta', 'correct', 'right'].some(s => rawResponse.includes(s))
+
+      if (hasNegative && !hasPositive) {
+        isCorrect = false
+      } else if (hasPositive && !hasNegative) {
+        isCorrect = true
+      } else {
+        // Ambiguous or unclear — default to correct
+        isCorrect = true
+      }
+    } catch (aiError: any) {
+      // AI failed entirely — auto-approve so players aren't penalized
+      console.error('AI validation failed, auto-approving:', aiError.message)
+      isCorrect = true
+      rawResponse = `auto-approved: ${aiError.message}`
     }
 
-    return NextResponse.json(result)
+    return await saveAndRespond(supabase, userId, huntId, clueId, isCorrect, rawResponse)
   } catch (error) {
-    console.error('Photo validation error:', error)
+    console.error('Photo validation critical error:', error)
     return NextResponse.json(
-      { error: 'Validation failed', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+      { is_correct: true, error: 'Validation error, auto-approved' },
+      { status: 200 }
     )
   }
+}
+
+async function saveAndRespond(
+  supabase: any,
+  userId: string,
+  huntId: string,
+  clueId: string,
+  isCorrect: boolean,
+  rawResponse: string,
+) {
+  const result = { is_correct: isCorrect, raw_response: rawResponse }
+
+  // ALWAYS update the DB
+  const { error: updateError } = await (supabase as any)
+    .from('user_clue_submissions')
+    .update({
+      is_correct: isCorrect,
+      ai_validation_result: result,
+    })
+    .eq('user_id', userId)
+    .eq('hunt_id', huntId)
+    .eq('clue_id', clueId)
+
+  if (updateError) {
+    console.error('Error updating submission:', updateError)
+  }
+
+  // Update correct clues count
+  if (isCorrect) {
+    const { data: participant } = await supabase
+      .from('hunt_participants')
+      .select('correct_clues')
+      .eq('hunt_id', huntId)
+      .eq('user_id', userId)
+      .single()
+
+    if (participant) {
+      await (supabase as any)
+        .from('hunt_participants')
+        .update({ correct_clues: (participant.correct_clues || 0) + 1 })
+        .eq('hunt_id', huntId)
+        .eq('user_id', userId)
+    }
+  }
+
+  return NextResponse.json(result)
 }
