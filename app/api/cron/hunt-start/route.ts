@@ -30,16 +30,15 @@ export async function GET() {
 
     for (const hunt of hunts || []) {
       // Dedup: check if we already sent a hunt_started notification for this hunt
-      const { data: alreadySent } = await (supabase as any)
+      const { data: existingNotifs } = await (supabase as any)
         .from('notifications')
         .select('id')
         .eq('hunt_id', hunt.id)
-        .eq('notification_type', 'hunt_started')
+        .in('notification_type', ['hunt_started', 'hunt_starting'])
         .eq('status', 'sent')
         .limit(1)
-        .single()
 
-      if (alreadySent) continue
+      if (existingNotifs && existingNotifs.length > 0) continue
 
       const message = `${hunt.title} e' iniziata! Buona fortuna!`
 

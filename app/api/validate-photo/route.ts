@@ -87,30 +87,28 @@ export async function POST(request: NextRequest) {
 
     // Create validation prompt
     const criteria = clue.correct_answer_criteria
-    const prompt = `You are a system that validates photos for a game.
+    // Format criteria as plain text (avoid JSON.stringify adding extra quotes for strings)
+    const criteriaText = typeof criteria === 'string' ? criteria : JSON.stringify(criteria)
+    const prompt = `You are a system that validates photos for a scavenger hunt game.
 
 CLUE
 ${clue.clue_text}
 
 CRITERION
-${JSON.stringify(criteria)}
+${criteriaText}
 
 TASK
 Decide whether the image satisfies the criterion.
 
 RULES
-- The image is "giusta" only if it clearly shows what the criterion describes.
-- If the required object is NOT present → sbagliata.
+- The image is "giusta" if it clearly shows what the clue or criterion describes, even partially.
+- Be generous: if the main subject is recognizable and matches the clue, it is "giusta".
+- The photo does NOT need to be high quality or perfectly framed.
+- Only mark as "sbagliata" if the required object is clearly NOT present at all.
 - If the object appears only inside a screen, display, printed image, or another photo → sbagliata.
-- If the image does not look like a real photo of a physical scene → sbagliata.
-- If you are unsure → sbagliata.
 
 OUTPUT
-Reply with ONLY one word:
-
-giusta
-or
-sbagliata`
+Reply with ONLY one word: giusta or sbagliata`
 
     // Call Gemini Vision API
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
@@ -126,11 +124,14 @@ sbagliata`
     ])
 
     const responseText = result_response.response.text().trim().toLowerCase()
-    const isCorrect = responseText === 'giusta'
+    // Check if response contains "giusta" (more flexible than exact match)
+    const isCorrect = responseText.includes('giusta') && !responseText.includes('sbagliata')
     const result = {
       is_correct: isCorrect,
       raw_response: responseText,
     }
+
+    console.log('Photo validation result:', { clueText: clue.clue_text, criteria: criteriaText, responseText, isCorrect })
 
     // Update submission with validation result
     const { error: updateError } = await (supabase as any)

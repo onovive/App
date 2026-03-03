@@ -24,19 +24,18 @@ export async function GET() {
 
     for (const hunt of hunts || []) {
       // Dedup: check if we already sent a results notification for this hunt
-      const { data: alreadySent } = await (supabase as any)
+      const { data: existingNotifs } = await (supabase as any)
         .from('notifications')
         .select('id')
         .eq('hunt_id', hunt.id)
         .eq('notification_type', 'hunt_completed')
         .eq('status', 'sent')
         .limit(1)
-        .single()
 
-      if (alreadySent) continue
+      if (existingNotifs && existingNotifs.length > 0) continue
 
       // Get the winner
-      const { data: winner } = await supabase
+      const { data: winners } = await supabase
         .from('hunt_participants')
         .select(`
           user_id,
@@ -49,9 +48,8 @@ export async function GET() {
         .not('completed_at', 'is', null)
         .order('total_time_seconds', { ascending: true })
         .limit(1)
-        .single()
 
-      const winnerName = (winner as any)?.profiles?.username || 'Unknown'
+      const winnerName = (winners && winners.length > 0) ? (winners[0] as any)?.profiles?.username || 'Unknown' : 'Unknown'
 
       const message = `Classifica disponibile per ${hunt.title}! Il vincitore e' ${winnerName}! Guarda i risultati nell'app.`
 

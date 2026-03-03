@@ -30,16 +30,15 @@ export async function GET() {
 
     for (const hunt of hunts || []) {
       // Dedup: check if we already sent a 60m reminder for this hunt
-      const { data: alreadySent } = await (supabase as any)
+      const { data: existingNotifs } = await (supabase as any)
         .from('notifications')
         .select('id')
         .eq('hunt_id', hunt.id)
         .eq('notification_type', 'hunt_reminder')
         .eq('status', 'sent')
         .limit(1)
-        .single()
 
-      if (alreadySent) continue
+      if (existingNotifs && existingNotifs.length > 0) continue
 
       const message = `${hunt.title} inizia tra 1 ora! Preparati!`
 

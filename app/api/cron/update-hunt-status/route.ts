@@ -33,16 +33,15 @@ export async function GET() {
         results.activatedHunts.push(hunt.title)
 
         // Dedup: only send if not already sent by hunt-start cron
-        const { data: alreadySent } = await (supabase as any)
+        const { data: existingStartNotifs } = await (supabase as any)
           .from('notifications')
           .select('id')
           .eq('hunt_id', hunt.id)
           .in('notification_type', ['hunt_starting', 'hunt_started'])
           .eq('status', 'sent')
           .limit(1)
-          .single()
 
-        if (!alreadySent) {
+        if (!existingStartNotifs || existingStartNotifs.length === 0) {
           const message = `La caccia "${hunt.title}" sta iniziando ORA!\n\nApri l'app e inizia a giocare. Buona fortuna!`
 
           const notifResult = await broadcastNotification({
@@ -81,18 +80,17 @@ export async function GET() {
         results.completedHunts.push(hunt.title)
 
         // Dedup: only send if not already sent by results-published cron
-        const { data: alreadySent } = await (supabase as any)
+        const { data: existingCompletedNotifs } = await (supabase as any)
           .from('notifications')
           .select('id')
           .eq('hunt_id', hunt.id)
           .eq('notification_type', 'hunt_completed')
           .eq('status', 'sent')
           .limit(1)
-          .single()
 
-        if (!alreadySent) {
+        if (!existingCompletedNotifs || existingCompletedNotifs.length === 0) {
           // Get winner
-          const { data: winner } = await supabase
+          const { data: winners } = await supabase
             .from('hunt_participants')
             .select(`
               user_id,
@@ -105,9 +103,8 @@ export async function GET() {
             .not('completed_at', 'is', null)
             .order('total_time_seconds', { ascending: true })
             .limit(1)
-            .single()
 
-          const winnerName = (winner as any)?.profiles?.username || 'Unknown'
+          const winnerName = (winners && winners.length > 0) ? (winners[0] as any)?.profiles?.username || 'Unknown' : 'Unknown'
 
           const message = `Classifica disponibile per "${hunt.title}"!\n\nIl vincitore e' ${winnerName}!\n\nGuarda i risultati nell'app.`
 

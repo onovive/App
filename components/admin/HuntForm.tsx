@@ -141,18 +141,7 @@ export default function HuntForm({ hunt }: HuntFormProps) {
 
         if (error) throw error
 
-        // Auto-announce to all users
-        try {
-          await fetch('/api/notifications/hunt-announced', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ huntId: newHunt.id }),
-          })
-        } catch (announceErr) {
-          console.error('Auto-announce failed:', announceErr)
-        }
-
-        alert('Hunt created and announced!')
+        alert('Hunt created successfully!')
       }
 
       router.push('/admin/hunts')
