@@ -48,17 +48,17 @@ export async function POST(request: NextRequest) {
       const criteria = clue.correct_answer_criteria
       const criteriaText = (typeof criteria === 'string' && criteria) ? criteria : clue.clue_text
 
-      const prompt = `You validate photos for a scavenger hunt. The player must find and photograph the item described.
+      const prompt = `Sei un validatore di foto per una caccia al tesoro. Il giocatore deve trovare e fotografare l'oggetto descritto.
 
-CLUE: ${clue.clue_text}
-CRITERION: ${criteriaText}
+INDIZIO: ${clue.clue_text}
+CRITERIO: ${criteriaText}
 
-Reply "giusta" if the photo shows the described item (even partially or at an angle).
-Reply "sbagliata" if the photo clearly does NOT contain the described item.
+Rispondi "giusta" se la foto mostra l'oggetto descritto (anche parzialmente o di angolo).
+Rispondi "sbagliata" se la foto chiaramente NON contiene l'oggetto descritto.
 
-Be fair: accept if the item is visible. Reject if the item is completely absent or the photo shows something unrelated.
+Sii giusto: accetta se l'oggetto è visibile. Rifiuta solo se l'oggetto è completamente assente o la foto mostra qualcosa di non correlato.
 
-Reply with ONLY one word: giusta or sbagliata`
+Rispondi con UNA SOLA parola: giusta o sbagliata`
 
       const response = await openai.chat.completions.create({
         model: 'gpt-4o',
