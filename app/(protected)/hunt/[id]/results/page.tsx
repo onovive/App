@@ -173,11 +173,6 @@ export default async function HuntResultsPage({
                         ? 'Giusta'
                         : 'Sbagliata'}
                     </div>
-                    {submission.ai_validation_result?.raw_response && (
-                      <div className="text-[10px] text-[#999] mt-1 italic truncate max-w-[200px]">
-                        AI: {submission.ai_validation_result.raw_response}
-                      </div>
-                    )}
                   </div>
 
                   {/* Image */}

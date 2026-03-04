@@ -43,8 +43,7 @@ export default async function HuntRankingsPage({
   const totalClueCount = actualClueCount || hunt.clues_count
 
   // Check if 24 hours have passed since start time
-const startTime = new Date(new Date(hunt.start_time).getTime() - 60 * 60 * 1000);
-  console.log(startTime)
+  const startTime = new Date(hunt.start_time)
   const now = new Date()
   const hoursSinceStart = (now.getTime() - startTime.getTime()) / (1000 * 60 * 60)
   const rankingsAvailable = hoursSinceStart >= 24
@@ -54,8 +53,7 @@ const startTime = new Date(new Date(hunt.start_time).getTime() - 60 * 60 * 1000)
   const formatCountdown = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
-    const secs = totalSeconds % 60
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
   }
 
   // Fetch all participants with their results

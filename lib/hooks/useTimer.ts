@@ -28,10 +28,7 @@ export function useTimer(huntId: string, autoStart = false) {
       }
 
       if (data?.start_time) {
-        // Parse the datetime string and treat it as Italy local time (ignore UTC indicator)
-        // Extract date/time parts: "2026-01-27T04:26:00.000Z" -> treat as "2026-01-27 04:26 Italy"
-        const timeStr = data.start_time.substring(0, 19) // Get "2026-01-27T04:26:00"
-        const started = new Date(timeStr) // Parse as local time
+        const started = new Date(data.start_time)
         const now = new Date()
 
         const elapsedMs = now.getTime() - started.getTime()
