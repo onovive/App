@@ -32,25 +32,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the winner (participant with lowest total_time_seconds who completed)
-    const { data: winner } = await supabase
-      .from('hunt_participants')
-      .select(`
-        user_id,
-        total_time_seconds,
-        profiles!inner (
-          username
-        )
-      `)
-      .eq('hunt_id', huntId)
-      .not('completed_at', 'is', null)
-      .order('total_time_seconds', { ascending: true })
-      .limit(1)
-      .single()
-
-    const winnerName = (winner as any)?.profiles?.username || 'Unknown'
-
-    const message = `Classifica disponibile per "${hunt.title}"!\n\nIl vincitore e' ${winnerName}!\n\nGuarda i risultati nell'app.`
+    const message = `La caccia ${hunt.title} e terminata.\n\nLa classifica e ora disponibile.\n\nhttps://app.periodiq.co`
 
     const result = await broadcastNotification({
       huntId,
@@ -64,7 +46,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ...result,
       huntTitle: hunt.title,
-      winner: winnerName,
     })
   } catch (error) {
     console.error('Results published notification error:', error)

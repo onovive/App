@@ -43,7 +43,7 @@ export async function GET() {
 
       if (existingNotifs && existingNotifs.length > 0) continue
 
-      const message = `${hunt.title} e' iniziata! Buona fortuna!`
+      const message = `La caccia ${hunt.title} e iniziata.\n\nBuona fortuna!\n\nhttps://app.periodiq.co`
 
       const result = await broadcastNotification({
         huntId: hunt.id,

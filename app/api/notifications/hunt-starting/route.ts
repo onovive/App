@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const message = `La caccia "${hunt.title}" sta iniziando ORA!\n\nApri l'app e inizia a giocare. Buona fortuna!`
+    const message = `La caccia ${hunt.title} e iniziata.\n\nBuona fortuna!\n\nhttps://app.periodiq.co`
 
     const result = await broadcastNotification({
       huntId,

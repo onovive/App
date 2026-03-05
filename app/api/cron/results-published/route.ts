@@ -34,24 +34,7 @@ export async function GET() {
 
       if (existingNotifs && existingNotifs.length > 0) continue
 
-      // Get the winner
-      const { data: winners } = await supabase
-        .from('hunt_participants')
-        .select(`
-          user_id,
-          total_time_seconds,
-          profiles!inner (
-            username
-          )
-        `)
-        .eq('hunt_id', hunt.id)
-        .not('completed_at', 'is', null)
-        .order('total_time_seconds', { ascending: true })
-        .limit(1)
-
-      const winnerName = (winners && winners.length > 0) ? (winners[0] as any)?.profiles?.username || 'Unknown' : 'Unknown'
-
-      const message = `Classifica disponibile per ${hunt.title}! Il vincitore e' ${winnerName}! Guarda i risultati nell'app.`
+      const message = `La caccia ${hunt.title} e terminata.\n\nLa classifica e ora disponibile.\n\nhttps://app.periodiq.co`
 
       const result = await broadcastNotification({
         huntId: hunt.id,
@@ -65,7 +48,6 @@ export async function GET() {
       results.push({
         huntId: hunt.id,
         title: hunt.title,
-        winner: winnerName,
         ...result,
       })
     }

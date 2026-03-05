@@ -56,8 +56,7 @@ export async function GET() {
         continue
       }
 
-      const startTime = new Date(hunt.start_time).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' })
-      const message = `🏁 *${hunt.title}* inizia tra 1 ora alle ${startTime}!\n\nAssicurati di avere il telefono carico e la fotocamera pronta. Buona fortuna! 🍀`
+      const message = `Tra 1 ora inizia la caccia ${hunt.title}.\n\nPreparati.\n\nhttps://app.periodiq.co`
 
       const result = await broadcastNotification({
         huntId: hunt.id,

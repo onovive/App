@@ -2,16 +2,12 @@
 
 import { useState } from 'react'
 
-const COUNTRY_CODES = [
-  { code: '+39', country: 'IT', flag: '🇮🇹' },
-  { code: '+44', country: 'GB', flag: '🇬🇧' },
-  { code: '+92', country: 'PK', flag: '🇵🇰' },
-]
+const COUNTRY_CODE = '+39'
 
 type WhatsAppStep = 'phone' | 'otp'
 
 export default function LoginPage() {
-  const [countryCode, setCountryCode] = useState('+39')
+  const countryCode = COUNTRY_CODE
   const [phoneNumber, setPhoneNumber] = useState('')
   const [otp, setOtp] = useState('')
   const [whatsAppStep, setWhatsAppStep] = useState<WhatsAppStep>('phone')
@@ -114,17 +110,9 @@ export default function LoginPage() {
             <div className="mb-[25px]">
               <div className="text-base mb-[10px]">Inserisci il tuo numero</div>
               <div className="flex gap-2">
-                <select
-                  value={countryCode}
-                  onChange={(e) => setCountryCode(e.target.value)}
-                  className="w-[100px] px-2 py-3 text-base border border-[#C0C0C0] bg-[#F5F5F5] rounded-[5px] text-[#666] focus:border-[#888] focus:outline-none cursor-pointer"
-                >
-                  {COUNTRY_CODES.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.flag} {c.code}
-                    </option>
-                  ))}
-                </select>
+                <div className="w-[80px] px-2 py-3 text-base border border-[#C0C0C0] bg-[#F5F5F5] rounded-[5px] text-[#666] flex items-center justify-center">
+                  +39
+                </div>
                 <input
                   type="tel"
                   placeholder="Numero di telefono"

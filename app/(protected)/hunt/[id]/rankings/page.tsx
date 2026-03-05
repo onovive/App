@@ -183,7 +183,7 @@ export default async function HuntRankingsPage({
                   <tr>
                     <th className="px-[5px] py-[10px]">Pos.</th>
                     <th className="px-[5px] py-[10px]">Giocatore</th>
-                    <th className="px-[5px] py-[10px] text-center">Clues</th>
+                    <th className="px-[5px] py-[10px] text-center">Indizi</th>
                     <th className="px-[5px] py-[10px] text-right pr-[5px]">Tempo</th>
                   </tr>
                 </thead>

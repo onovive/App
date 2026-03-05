@@ -33,8 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     const startDate = new Date(hunt.start_time)
-    const dateStr = startDate.toLocaleDateString('it-IT', {
-      weekday: 'long',
+    const day = startDate.toLocaleDateString('it-IT', {
       day: 'numeric',
       month: 'long',
       timeZone: 'Europe/Rome',
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
       timeZone: 'Europe/Rome',
     })
 
-    const message = `Nuova Caccia al Tesoro: ${hunt.title}!\n\nInizio: ${dateStr} alle ${timeStr}\n\nIscriviti subito nell'app per partecipare!`
+    const message = `Nuova caccia al tesoro: ${hunt.title}.\n\nInizio: ${day} alle ${timeStr}.\n\nIscriviti ora:\nhttps://app.periodiq.co`
 
     // Broadcast to all users with phone numbers
     const result = await broadcastNotification({

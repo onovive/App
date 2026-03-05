@@ -65,8 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     const startDate = new Date(hunt.start_time)
-    const dateStr = startDate.toLocaleDateString('it-IT', {
-      weekday: 'long',
+    const day = startDate.toLocaleDateString('it-IT', {
       day: 'numeric',
       month: 'long',
       timeZone: 'Europe/Rome',
@@ -77,7 +76,7 @@ export async function POST(request: NextRequest) {
       timeZone: 'Europe/Rome',
     })
 
-    const message = `Sei iscritto a: ${hunt.title}!\n\nLa caccia iniziera' ${dateStr} alle ${timeStr}.\n\nTi avviseremo prima dell'inizio. Buona fortuna!`
+    const message = `Iscrizione confermata a ${hunt.title}.\n\nLa caccia inizia ${day} alle ${timeStr}.`
 
     console.log('Sending hunt joined notification:', { userId, huntId, phoneNumber: profile.phone_number })
 

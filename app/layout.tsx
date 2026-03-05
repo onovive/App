@@ -3,9 +3,9 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'PeriodiQ - App',
-  description: 'Join exciting scavenger hunts and explore the world around you',
+  description: 'Unisciti a entusiasmanti cacce al tesoro ed esplora il mondo intorno a te.',
   icons: {
-    icon: '/LOGO.svg',
+    icon: '/Favicon.png',
   },
 }
 
