@@ -31,27 +31,33 @@ export async function GET() {
     const errors: string[] = []
 
     for (const msg of dueMessages || []) {
-      // Dedup: skip if this user already got a similar notification from the cron-based system
-      const { data: alreadyNotified } = await (supabase as any)
-        .from('notifications')
-        .select('id')
-        .eq('user_id', msg.user_id)
-        .eq('hunt_id', msg.hunt_id)
-        .eq('status', 'sent')
-        .limit(1)
+      // Dedup: skip only if this exact notification type was already sent by the cron-based system
+      // Map scheduled message types to their cron equivalents
+      const dedupTypes: Record<string, string[]> = {
+        'hunt_reminder_60m': ['hunt_reminder_60m', 'hunt_reminder'],
+        'hunt_starting': ['hunt_starting', 'hunt_started'],
+      }
+      const typesToCheck = dedupTypes[msg.notification_type]
 
-      // Map scheduled message types to cron notification types for dedup
-      const isReminderType = msg.notification_type === 'hunt_reminder_60m'
-      const isStartType = msg.notification_type === 'hunt_starting'
+      if (typesToCheck) {
+        const { data: alreadyNotified } = await (supabase as any)
+          .from('notifications')
+          .select('id')
+          .eq('user_id', msg.user_id)
+          .eq('hunt_id', msg.hunt_id)
+          .in('notification_type', typesToCheck)
+          .eq('status', 'sent')
+          .limit(1)
 
-      if (alreadyNotified && alreadyNotified.length > 0 && (isReminderType || isStartType)) {
-        // Already sent by cron system, mark as sent to avoid retry
-        await (supabase as any)
-          .from('scheduled_messages')
-          .update({ status: 'sent' })
-          .eq('id', msg.id)
-        skipped++
-        continue
+        if (alreadyNotified && alreadyNotified.length > 0) {
+          // Already sent by cron system, mark as sent to avoid retry
+          await (supabase as any)
+            .from('scheduled_messages')
+            .update({ status: 'sent' })
+            .eq('id', msg.id)
+          skipped++
+          continue
+        }
       }
 
       const result = await sendSMSMessage(msg.phone_number, msg.message_body)

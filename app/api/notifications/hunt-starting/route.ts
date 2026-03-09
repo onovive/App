@@ -32,6 +32,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Dedup: skip if a hunt_started or hunt_starting notification was already sent
+    const { data: existingNotifs } = await (supabase as any)
+      .from('notifications')
+      .select('id')
+      .eq('hunt_id', huntId)
+      .in('notification_type', ['hunt_started', 'hunt_starting'])
+      .eq('status', 'sent')
+      .limit(1)
+
+    if (existingNotifs && existingNotifs.length > 0) {
+      return NextResponse.json({
+        success: true,
+        skipped: true,
+        reason: 'Notification already sent for this hunt',
+      })
+    }
+
     const message = `La caccia ${hunt.title} e iniziata.\n\nBuona fortuna!\n\nhttps://app.periodiq.co`
 
     const result = await broadcastNotification({
