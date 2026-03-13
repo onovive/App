@@ -288,7 +288,7 @@ export default async function HuntParticipantsPage({
                               src={submission.photo_url}
                               alt={`Clue ${submission.clue?.clue_number}`}
                               fill
-                              className="object-cover"
+                              className="object-contain"
                             />
                           </div>
                           <div className="p-3 bg-white">

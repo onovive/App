@@ -64,7 +64,7 @@ export default function ParticipantsList({ huntId, userId }: ParticipantsListPro
       )
       .eq('hunt_id', huntId)
       .order('subscribed_at', { ascending: true })
-      .limit(10)
+      .limit(50)
 
     if (error) {
       console.error('Error fetching participants:', error)

@@ -104,7 +104,7 @@ export default async function HuntDetailsPage({
               <img
                 src={hunt.cover_image_url}
                 alt={hunt.title} 
-                className="object-cover"
+                className="w-full h-full object-cover"
               />
             ) : (
               <div className="text-white text-xl">No Image</div>
@@ -186,9 +186,7 @@ export default async function HuntDetailsPage({
 
           {/* Participants List */}
           <div className="mb-5">
-            <h3 className="text-base font-bold mt-5 mb-[10px] border-b border-dashed border-[#E0E0E0] pb-[5px]">
-              Partecipanti ({participantCount})
-            </h3>
+            <h3 className="text-base font-bold mt-5 mb-[10px] border-b border-dashed border-[#E0E0E0] pb-[5px]">{`Partecipanti (${participantCount})`}</h3>
             <ParticipantsList huntId={id} userId={user.id} />
           </div>
 

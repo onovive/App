@@ -128,7 +128,7 @@ export default async function DashboardPage() {
                       <img
                         src={hunt.cover_image_url}
                         alt={hunt.title}
-                        className="w-full h-full "
+                        className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
@@ -214,7 +214,7 @@ export default async function DashboardPage() {
                     <img
                       src={hunt.cover_image_url}
                       alt={hunt.title}
-                      className="w-full h-full "
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
@@ -290,9 +290,10 @@ export default async function DashboardPage() {
 
           {pastHunts && pastHunts.length > 0 ? (
             pastHunts.map((hunt) => (
-              <div
+              <Link
                 key={hunt.id}
-                className="block border border-[#C0C0C0] mb-[15px] bg-white flex items-stretch opacity-75"
+                href={`/hunt/${hunt.id}`}
+                className="block border border-[#C0C0C0] mb-[15px] bg-white flex items-stretch opacity-75 cursor-pointer transition-shadow hover:shadow-[0_2px_5px_rgba(0,0,0,0.1)]"
               >
                 {/* Hunt Image - Square */}
                 <div className="w-[150px] h-[170px] flex-shrink-0 bg-[#D0D0D0] flex items-center justify-center overflow-hidden border-r border-[#C0C0C0]">
@@ -359,7 +360,7 @@ export default async function DashboardPage() {
                     </div>
                   )}
                 </div>
-              </div>
+              </Link>
             ))
           ) : (
             <div className="text-gray-500 text-sm py-4">

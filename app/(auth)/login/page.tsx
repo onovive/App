@@ -82,7 +82,9 @@ export default function LoginPage() {
       <div className="w-full max-w-[400px] bg-white border border-[#D0D0D0] p-5 box-border">
         {/* App Header with Logo */}
         <div className="flex justify-center mb-[30px] pb-[10px]">
-          <img src="/LOGO.svg" alt="PeriodiQ" className="h-10" />
+          <a href="https://periodiq.co" target="_blank" rel="noopener noreferrer">
+            <img src="/LOGO.svg" alt="PeriodiQ" className="h-10" />
+          </a>
         </div>
 
         {/* Screen Title */}
